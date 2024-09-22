@@ -3,7 +3,7 @@ pub struct OrderQueryResp {
     pub orders: Vec<Order>,
 }
 
-#[derive(serde::Deserialize, Debug)]
+#[derive(serde::Deserialize, Debug, Clone)]
 pub struct GetOrderResp {
     pub order: Order,
 }
@@ -86,6 +86,7 @@ pub struct WebhookResponse {
     pub message: String,
 }
 
+#[derive(serde::Deserialize, Debug, serde::Serialize, Clone)]
 pub enum APIError {
     ServerError { errors: String },
     FailedToParse,

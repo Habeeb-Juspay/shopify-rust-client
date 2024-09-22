@@ -1,6 +1,6 @@
 use utils::parse_response;
 
-use crate::types::{APIError, GetOrderResp, PatchOrderRequest};
+use crate::types::{APIError, GetOrderResp, OrderQueryResp, PatchOrderRequest};
 
 mod utils;
 
@@ -30,7 +30,7 @@ pub async fn get_order_with_name(
     shop_url: &String,
     order_name: &String,
     access_token: &String,
-) -> Result<GetOrderResp, APIError> {
+) -> Result<OrderQueryResp, APIError> {
     let endpoint = format!(
         "{}/admin/api/2024-07/orders.json?query=name:%23{}&status=any",
         shop_url, order_name
@@ -43,7 +43,7 @@ pub async fn get_order_with_name(
         .await;
 
     match response {
-        Ok(resp) => parse_response::<GetOrderResp>(resp).await,
+        Ok(resp) => parse_response::<OrderQueryResp>(resp).await,
         Err(_) => Err(APIError::NetworkError),
     }
 }
