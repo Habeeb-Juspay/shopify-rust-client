@@ -28,6 +28,7 @@ pub struct Order {
     pub total_shipping_price_set: PriceSet,
     pub total_tax_set: PriceSet,
     pub order_status_url: Option<String>,
+    pub financial_status: Option<String>,
 }
 
 #[derive(serde::Deserialize, Debug, Clone, serde::Serialize)]
