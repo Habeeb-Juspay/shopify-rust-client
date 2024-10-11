@@ -30,6 +30,8 @@ pub struct Order {
     pub order_status_url: Option<String>,
     pub financial_status: Option<String>,
     pub name: String,
+    pub customer: Customer,
+    pub created_at: String,
 }
 
 #[derive(serde::Deserialize, Debug, Clone, serde::Serialize)]
@@ -39,6 +41,15 @@ pub struct Fulfillment {
     pub tracking_number: Option<String>,
     pub tracking_company: Option<String>,
     pub tracking_url: Option<String>,
+}
+
+#[derive(serde::Deserialize, Debug, Clone, serde::Serialize)]
+pub struct Customer {
+    pub id: u128,
+    pub email: Option<String>,
+    pub phone: Option<String>,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
 }
 
 #[derive(serde::Deserialize, Debug, Clone, serde::Serialize)]
