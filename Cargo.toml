@@ -1,7 +1,15 @@
 [package]
-name = "shopify_client"
+name = "shopify-client"
 version = "0.1.0"
 edition = "2021"
+description = "A Rust client library for the Shopify Admin API with support for REST and GraphQL endpoints"
+authors = ["Sahil Sinha"]
+repository = "https://github.com/sinha-sahil/shopify-rust-client"
+license = "MIT"
+keywords = ["shopify", "api", "client", "ecommerce", "rest"]
+categories = ["api-bindings", "web-programming::http-client"]
+readme = "README.md"
+exclude = [".gitignore", ".vscode/*"]
 
 [dependencies]
 reqwest = { version = "0.12.4", features = ["json"] }
