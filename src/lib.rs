@@ -9,6 +9,8 @@ pub struct ShopifyClient {
     pub order: services::order::Order,
     pub subscription: services::subscription::Subscription,
     pub app_installation: services::app_installation::AppInstallation,
+    pub discount: services::discount::Discount,
+    pub cart_transform: services::cart_transform::CartTransform,
 }
 
 impl ShopifyClient {
@@ -30,6 +32,16 @@ impl ShopifyClient {
                 Arc::clone(&access_token_arc),
             ),
             app_installation: services::app_installation::AppInstallation::new(
+                Arc::clone(&shop_url_arc),
+                Arc::clone(&api_version_arc),
+                Arc::clone(&access_token_arc),
+            ),
+            discount: services::discount::Discount::new(
+                Arc::clone(&shop_url_arc),
+                Arc::clone(&api_version_arc),
+                Arc::clone(&access_token_arc),
+            ),
+            cart_transform: services::cart_transform::CartTransform::new(
                 Arc::clone(&shop_url_arc),
                 Arc::clone(&api_version_arc),
                 Arc::clone(&access_token_arc),
