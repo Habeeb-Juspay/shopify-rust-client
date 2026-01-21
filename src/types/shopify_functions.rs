@@ -21,6 +21,7 @@ pub struct ShopifyFunction {
     #[serde(rename = "apiVersion")]
     pub api_version: String,
     pub app: Option<App>,
+    pub handle: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]

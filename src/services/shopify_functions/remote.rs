@@ -73,6 +73,7 @@ pub async fn list_shopify_functions(
                     description
                     apiType
                     apiVersion
+                    handle
                     app {
                         id
                         title
