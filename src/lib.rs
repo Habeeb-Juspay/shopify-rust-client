@@ -11,6 +11,7 @@ pub struct ShopifyClient {
     pub app_installation: services::app_installation::AppInstallation,
     pub discount: services::discount::Discount,
     pub cart_transform: services::cart_transform::CartTransform,
+    pub shopify_functions: services::shopify_functions::ShopifyFunctions,
 }
 
 impl ShopifyClient {
@@ -42,6 +43,11 @@ impl ShopifyClient {
                 Arc::clone(&access_token_arc),
             ),
             cart_transform: services::cart_transform::CartTransform::new(
+                Arc::clone(&shop_url_arc),
+                Arc::clone(&api_version_arc),
+                Arc::clone(&access_token_arc),
+            ),
+            shopify_functions: services::shopify_functions::ShopifyFunctions::new(
                 Arc::clone(&shop_url_arc),
                 Arc::clone(&api_version_arc),
                 Arc::clone(&access_token_arc),
