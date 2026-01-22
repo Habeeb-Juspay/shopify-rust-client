@@ -1,6 +1,9 @@
 use crate::{
     common::types::APIError,
-    types::discount::{DiscountAutomaticAppCreateResp, DiscountAutomaticAppInput},
+    types::discount::{
+        DiscountAutomaticAppCreateResp, DiscountAutomaticAppInput, DiscountAutomaticAppUpdateInput,
+        DiscountAutomaticAppUpdateResp,
+    },
 };
 use serde_json::json;
 
@@ -91,6 +94,17 @@ pub async fn create_automatic_app_discount(
                     appliesOnOneTimePurchase
                     appliesOnSubscription
                     recurringCycleLimit
+                    metafields(first: 50) {
+                        edges {
+                            node {
+                                id
+                                namespace
+                                key
+                                value
+                                type
+                            }
+                        }
+                    }
                 }
                 userErrors {
                     field
@@ -104,6 +118,77 @@ pub async fn create_automatic_app_discount(
 
     let variables = json!({
         "automaticAppDiscount": input
+    });
+
+    execute_graphql(shop_url, version, access_token, query, variables).await
+}
+
+pub async fn update_automatic_app_discount(
+    shop_url: &String,
+    version: &String,
+    access_token: &String,
+    input: &DiscountAutomaticAppUpdateInput,
+) -> Result<DiscountAutomaticAppUpdateResp, APIError> {
+    let query = r#"
+        mutation discountAutomaticAppUpdate($automaticAppDiscount: DiscountAutomaticAppInput!, $id: ID!) {
+            discountAutomaticAppUpdate(automaticAppDiscount: $automaticAppDiscount, id: $id) {
+                automaticAppDiscount {
+                    discountId
+                    title
+                    startsAt
+                    endsAt
+                    status
+                    appDiscountType {
+                        appKey
+                        functionId
+                        title
+                        description
+                    }
+                    combinesWith {
+                        orderDiscounts
+                        productDiscounts
+                        shippingDiscounts
+                    }
+                    appliesOnOneTimePurchase
+                    appliesOnSubscription
+                    recurringCycleLimit
+                    metafields(first: 50) {
+                        edges {
+                            node {
+                                id
+                                namespace
+                                key
+                                value
+                                type
+                            }
+                        }
+                    }
+                }
+                userErrors {
+                    field
+                    message
+                    code
+                }
+            }
+        }
+    "#
+    .to_string();
+
+    let variables = json!({
+        "id": input.id,
+        "automaticAppDiscount": {
+            "title": input.title,
+            "functionHandle": input.function_handle,
+            "startsAt": input.starts_at,
+            "endsAt": input.ends_at,
+            "combinesWith": input.combines_with,
+            "discountClasses": input.discount_classes,
+            "context": input.context,
+            "metafields": input.metafields,
+            "appliesOnSubscription": input.applies_on_subscription,
+            "appliesOnOneTimePurchase": input.applies_on_one_time_purchase,
+            "recurringCycleLimit": input.recurring_cycle_limit,
+        }
     });
 
     execute_graphql(shop_url, version, access_token, query, variables).await
