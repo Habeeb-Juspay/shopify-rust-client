@@ -1,5 +1,8 @@
 use crate::{
-    common::types::APIError,
+    common::{
+        http::execute_graphql,
+        types::{APIError, RequestCallbacks},
+    },
     types::subscription::{
         ActiveSubscriptionsResp, AppPricingInterval, CancelSubscriptionResp,
         CreateCombinedSubscriptionRequest, CreateRecurringSubscriptionRequest,
@@ -9,68 +12,11 @@ use crate::{
 };
 use serde_json::json;
 
-#[derive(serde::Serialize)]
-struct GraphQLRequest {
-    query: String,
-    variables: serde_json::Value,
-}
-
-#[derive(serde::Deserialize)]
-struct GraphQLResponse<T> {
-    data: Option<T>,
-    errors: Option<Vec<GraphQLError>>,
-}
-
-#[derive(serde::Deserialize, Debug)]
-struct GraphQLError {
-    message: String,
-}
-
-async fn execute_graphql<T: serde::de::DeserializeOwned>(
-    shop_url: &String,
-    version: &String,
-    access_token: &String,
-    query: String,
-    variables: serde_json::Value,
-) -> Result<T, APIError> {
-    let endpoint = format!("{}/admin/api/{}/graphql.json", shop_url, version);
-
-    let request_body = GraphQLRequest { query, variables };
-
-    let client = reqwest::Client::new();
-    let response = client
-        .post(&endpoint)
-        .header("X-Shopify-Access-Token", access_token)
-        .header("Content-Type", "application/json")
-        .json(&request_body)
-        .send()
-        .await;
-
-    match response {
-        Ok(resp) => {
-            let graphql_response = resp
-                .json::<GraphQLResponse<T>>()
-                .await
-                .map_err(|_| APIError::FailedToParse)?;
-
-            if let Some(errors) = graphql_response.errors {
-                let error_messages: Vec<String> =
-                    errors.iter().map(|e| e.message.clone()).collect();
-                return Err(APIError::ServerError {
-                    errors: error_messages.join(", "),
-                });
-            }
-
-            graphql_response.data.ok_or(APIError::FailedToParse)
-        }
-        Err(_) => Err(APIError::NetworkError),
-    }
-}
-
 pub async fn create_recurring_subscription(
     shop_url: &String,
     version: &String,
     access_token: &String,
+    callbacks: &RequestCallbacks,
     request: &CreateRecurringSubscriptionRequest,
 ) -> Result<CreateSubscriptionResp, APIError> {
     let interval = request.interval.unwrap_or(AppPricingInterval::Every30Days);
@@ -138,13 +84,14 @@ pub async fn create_recurring_subscription(
         "trialDays": request.trial_days
     });
 
-    execute_graphql(shop_url, version, access_token, query, variables).await
+    execute_graphql(shop_url, version, access_token, callbacks, query, variables).await
 }
 
 pub async fn create_usage_subscription(
     shop_url: &String,
     version: &String,
     access_token: &String,
+    callbacks: &RequestCallbacks,
     request: &CreateUsageSubscriptionRequest,
 ) -> Result<CreateSubscriptionResp, APIError> {
     let test = request.test.unwrap_or(false);
@@ -209,13 +156,14 @@ pub async fn create_usage_subscription(
         "trialDays": request.trial_days
     });
 
-    execute_graphql(shop_url, version, access_token, query, variables).await
+    execute_graphql(shop_url, version, access_token, callbacks, query, variables).await
 }
 
 pub async fn create_combined_subscription(
     shop_url: &String,
     version: &String,
     access_token: &String,
+    callbacks: &RequestCallbacks,
     request: &CreateCombinedSubscriptionRequest,
 ) -> Result<CreateSubscriptionResp, APIError> {
     let interval = request.interval.unwrap_or(AppPricingInterval::Every30Days);
@@ -307,13 +255,14 @@ pub async fn create_combined_subscription(
         "trialDays": request.trial_days
     });
 
-    execute_graphql(shop_url, version, access_token, query, variables).await
+    execute_graphql(shop_url, version, access_token, callbacks, query, variables).await
 }
 
 pub async fn cancel_subscription(
     shop_url: &String,
     version: &String,
     access_token: &String,
+    callbacks: &RequestCallbacks,
     subscription_id: &String,
     prorate: bool,
 ) -> Result<CancelSubscriptionResp, APIError> {
@@ -366,13 +315,14 @@ pub async fn cancel_subscription(
         "prorate": prorate
     });
 
-    execute_graphql(shop_url, version, access_token, query, variables).await
+    execute_graphql(shop_url, version, access_token, callbacks, query, variables).await
 }
 
 pub async fn extend_trial(
     shop_url: &String,
     version: &String,
     access_token: &String,
+    callbacks: &RequestCallbacks,
     subscription_id: &String,
     days: i32,
 ) -> Result<ExtendTrialResp, APIError> {
@@ -399,13 +349,14 @@ pub async fn extend_trial(
         "days": days
     });
 
-    execute_graphql(shop_url, version, access_token, query, variables).await
+    execute_graphql(shop_url, version, access_token, callbacks, query, variables).await
 }
 
 pub async fn update_capped_amount(
     shop_url: &String,
     version: &String,
     access_token: &String,
+    callbacks: &RequestCallbacks,
     line_item_id: &String,
     capped_amount: &MoneyInput,
 ) -> Result<UpdateCappedAmountResp, APIError> {
@@ -454,13 +405,14 @@ pub async fn update_capped_amount(
         }
     });
 
-    execute_graphql(shop_url, version, access_token, query, variables).await
+    execute_graphql(shop_url, version, access_token, callbacks, query, variables).await
 }
 
 pub async fn create_usage_record(
     shop_url: &String,
     version: &String,
     access_token: &String,
+    callbacks: &RequestCallbacks,
     request: &CreateUsageRecordRequest,
 ) -> Result<CreateUsageRecordResp, APIError> {
     let query = r#"
@@ -493,13 +445,14 @@ pub async fn create_usage_record(
         "idempotencyKey": request.idempotency_key
     });
 
-    execute_graphql(shop_url, version, access_token, query, variables).await
+    execute_graphql(shop_url, version, access_token, callbacks, query, variables).await
 }
 
 pub async fn get_active_subscriptions(
     shop_url: &String,
     version: &String,
     access_token: &String,
+    callbacks: &RequestCallbacks,
 ) -> Result<ActiveSubscriptionsResp, APIError> {
     let query = r#"
         query {
@@ -548,5 +501,5 @@ pub async fn get_active_subscriptions(
 
     let variables = json!({});
 
-    execute_graphql(shop_url, version, access_token, query, variables).await
+    execute_graphql(shop_url, version, access_token, callbacks, query, variables).await
 }

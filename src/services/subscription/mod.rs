@@ -3,7 +3,7 @@ pub mod remote;
 use std::sync::Arc;
 
 use crate::{
-    common::types::APIError,
+    common::types::{APIError, RequestCallbacks},
     types::subscription::{
         ActiveSubscriptionsResp, CancelSubscriptionResp, CreateCombinedSubscriptionRequest,
         CreateRecurringSubscriptionRequest, CreateSubscriptionResp, CreateUsageRecordRequest,
@@ -16,14 +16,21 @@ pub struct Subscription {
     pub shop_url: Arc<String>,
     pub version: Arc<String>,
     pub access_token: Arc<String>,
+    pub callbacks: Arc<RequestCallbacks>,
 }
 
 impl Subscription {
-    pub fn new(shop_url: Arc<String>, version: Arc<String>, access_token: Arc<String>) -> Self {
+    pub fn new(
+        shop_url: Arc<String>,
+        version: Arc<String>,
+        access_token: Arc<String>,
+        callbacks: Arc<RequestCallbacks>,
+    ) -> Self {
         Subscription {
             shop_url,
             version,
             access_token,
+            callbacks,
         }
     }
 
@@ -35,6 +42,7 @@ impl Subscription {
             &self.shop_url,
             &self.version,
             &self.access_token,
+            &self.callbacks,
             request,
         )
         .await
@@ -48,6 +56,7 @@ impl Subscription {
             &self.shop_url,
             &self.version,
             &self.access_token,
+            &self.callbacks,
             request,
         )
         .await
@@ -61,6 +70,7 @@ impl Subscription {
             &self.shop_url,
             &self.version,
             &self.access_token,
+            &self.callbacks,
             request,
         )
         .await
@@ -75,6 +85,7 @@ impl Subscription {
             &self.shop_url,
             &self.version,
             &self.access_token,
+            &self.callbacks,
             subscription_id,
             prorate,
         )
@@ -90,6 +101,7 @@ impl Subscription {
             &self.shop_url,
             &self.version,
             &self.access_token,
+            &self.callbacks,
             subscription_id,
             days,
         )
@@ -105,6 +117,7 @@ impl Subscription {
             &self.shop_url,
             &self.version,
             &self.access_token,
+            &self.callbacks,
             line_item_id,
             capped_amount,
         )
@@ -115,11 +128,23 @@ impl Subscription {
         &self,
         request: &CreateUsageRecordRequest,
     ) -> Result<CreateUsageRecordResp, APIError> {
-        remote::create_usage_record(&self.shop_url, &self.version, &self.access_token, request)
-            .await
+        remote::create_usage_record(
+            &self.shop_url,
+            &self.version,
+            &self.access_token,
+            &self.callbacks,
+            request,
+        )
+        .await
     }
 
     pub async fn get_active_subscriptions(&self) -> Result<ActiveSubscriptionsResp, APIError> {
-        remote::get_active_subscriptions(&self.shop_url, &self.version, &self.access_token).await
+        remote::get_active_subscriptions(
+            &self.shop_url,
+            &self.version,
+            &self.access_token,
+            &self.callbacks,
+        )
+        .await
     }
 }

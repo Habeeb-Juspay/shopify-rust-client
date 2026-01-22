@@ -3,7 +3,7 @@ pub mod remote;
 use std::sync::Arc;
 
 use crate::{
-    common::types::APIError,
+    common::types::{APIError, RequestCallbacks},
     types::discount::{
         DiscountAutomaticAppCreateResp, DiscountAutomaticAppInput, DiscountAutomaticAppUpdateInput,
         DiscountAutomaticAppUpdateResp, DiscountNodesResp,
@@ -14,14 +14,21 @@ pub struct Discount {
     pub shop_url: Arc<String>,
     pub version: Arc<String>,
     pub access_token: Arc<String>,
+    pub callbacks: Arc<RequestCallbacks>,
 }
 
 impl Discount {
-    pub fn new(shop_url: Arc<String>, version: Arc<String>, access_token: Arc<String>) -> Self {
+    pub fn new(
+        shop_url: Arc<String>,
+        version: Arc<String>,
+        access_token: Arc<String>,
+        callbacks: Arc<RequestCallbacks>,
+    ) -> Self {
         Discount {
             shop_url,
             version,
             access_token,
+            callbacks,
         }
     }
 
@@ -33,6 +40,7 @@ impl Discount {
             &self.shop_url,
             &self.version,
             &self.access_token,
+            &self.callbacks,
             input,
         )
         .await
@@ -46,6 +54,7 @@ impl Discount {
             &self.shop_url,
             &self.version,
             &self.access_token,
+            &self.callbacks,
             input,
         )
         .await
@@ -61,6 +70,7 @@ impl Discount {
             &self.shop_url,
             &self.version,
             &self.access_token,
+            &self.callbacks,
             first,
             after,
             query,

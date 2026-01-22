@@ -3,7 +3,7 @@ pub mod remote;
 use std::sync::Arc;
 
 use crate::{
-    common::types::APIError,
+    common::types::{APIError, RequestCallbacks},
     types::app_installation::{
         DeleteMetafieldResp, GetCurrentAppInstallationResp, GetMetafieldResp, ListMetafieldsResp,
         MetafieldInput, SetMetafieldsResp,
@@ -14,20 +14,32 @@ pub struct AppInstallation {
     pub shop_url: Arc<String>,
     pub version: Arc<String>,
     pub access_token: Arc<String>,
+    pub callbacks: Arc<RequestCallbacks>,
 }
 
 impl AppInstallation {
-    pub fn new(shop_url: Arc<String>, version: Arc<String>, access_token: Arc<String>) -> Self {
+    pub fn new(
+        shop_url: Arc<String>,
+        version: Arc<String>,
+        access_token: Arc<String>,
+        callbacks: Arc<RequestCallbacks>,
+    ) -> Self {
         AppInstallation {
             shop_url,
             version,
             access_token,
+            callbacks,
         }
     }
 
     pub async fn get_current(&self) -> Result<GetCurrentAppInstallationResp, APIError> {
-        remote::get_current_app_installation(&self.shop_url, &self.version, &self.access_token)
-            .await
+        remote::get_current_app_installation(
+            &self.shop_url,
+            &self.version,
+            &self.access_token,
+            &self.callbacks,
+        )
+        .await
     }
 
     pub async fn set_metafields(
@@ -38,6 +50,7 @@ impl AppInstallation {
             &self.shop_url,
             &self.version,
             &self.access_token,
+            &self.callbacks,
             metafields,
         )
         .await
@@ -53,6 +66,7 @@ impl AppInstallation {
             &self.shop_url,
             &self.version,
             &self.access_token,
+            &self.callbacks,
             app_installation_id,
             namespace,
             key,
@@ -69,6 +83,7 @@ impl AppInstallation {
             &self.shop_url,
             &self.version,
             &self.access_token,
+            &self.callbacks,
             app_installation_id,
             first,
         )
@@ -83,6 +98,7 @@ impl AppInstallation {
             &self.shop_url,
             &self.version,
             &self.access_token,
+            &self.callbacks,
             metafield_id,
         )
         .await
