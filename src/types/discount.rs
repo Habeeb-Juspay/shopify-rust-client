@@ -13,6 +13,83 @@ pub struct DiscountAutomaticAppUpdateResp {
 }
 
 #[derive(serde::Deserialize, Debug)]
+pub struct DiscountNodesResp {
+    #[serde(rename = "discountNodes")]
+    pub discount_nodes: DiscountNodesConnection,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct DiscountNodesConnection {
+    pub nodes: Vec<DiscountNode>,
+    #[serde(rename = "pageInfo")]
+    pub page_info: PageInfo,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct PageInfo {
+    #[serde(rename = "hasNextPage")]
+    pub has_next_page: bool,
+    #[serde(rename = "hasPreviousPage")]
+    pub has_previous_page: bool,
+    #[serde(rename = "startCursor")]
+    pub start_cursor: Option<String>,
+    #[serde(rename = "endCursor")]
+    pub end_cursor: Option<String>,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct DiscountNode {
+    pub id: String,
+    pub discount: DiscountType,
+}
+
+#[derive(serde::Deserialize, Debug)]
+#[serde(tag = "__typename")]
+pub enum DiscountType {
+    DiscountAutomaticApp(DiscountAutomaticAppDetails),
+    DiscountCodeApp(DiscountCodeAppDetails),
+    DiscountAutomaticBasic(DiscountBasicDetails),
+    DiscountCodeBasic(DiscountBasicDetails),
+    DiscountAutomaticBxgy(DiscountBxgyDetails),
+    DiscountCodeBxgy(DiscountBxgyDetails),
+    DiscountCodeFreeShipping(DiscountFreeShippingDetails),
+}
+
+#[derive(serde::Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct DiscountAutomaticAppDetails {
+    pub title: String,
+    pub status: String,
+    pub app_discount_type: AppDiscountType,
+}
+
+#[derive(serde::Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct DiscountCodeAppDetails {
+    pub title: String,
+    pub status: String,
+    pub app_discount_type: AppDiscountType,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct DiscountBasicDetails {
+    pub title: String,
+    pub status: String,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct DiscountBxgyDetails {
+    pub title: String,
+    pub status: String,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct DiscountFreeShippingDetails {
+    pub title: String,
+    pub status: String,
+}
+
+#[derive(serde::Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct DiscountAutomaticAppCreatePayload {
     pub automatic_app_discount: Option<DiscountAutomaticApp>,
@@ -47,6 +124,8 @@ pub struct DiscountAutomaticApp {
 pub struct AppDiscountType {
     pub app_key: String,
     pub function_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub function_handle: Option<String>,
     pub title: Option<String>,
     pub description: Option<String>,
 }

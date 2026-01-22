@@ -6,7 +6,7 @@ use crate::{
     common::types::APIError,
     types::discount::{
         DiscountAutomaticAppCreateResp, DiscountAutomaticAppInput, DiscountAutomaticAppUpdateInput,
-        DiscountAutomaticAppUpdateResp,
+        DiscountAutomaticAppUpdateResp, DiscountNodesResp,
     },
 };
 
@@ -47,6 +47,23 @@ impl Discount {
             &self.version,
             &self.access_token,
             input,
+        )
+        .await
+    }
+
+    pub async fn list_discounts(
+        &self,
+        first: Option<i32>,
+        after: Option<String>,
+        query: Option<String>,
+    ) -> Result<DiscountNodesResp, APIError> {
+        remote::list_discounts(
+            &self.shop_url,
+            &self.version,
+            &self.access_token,
+            first,
+            after,
+            query,
         )
         .await
     }

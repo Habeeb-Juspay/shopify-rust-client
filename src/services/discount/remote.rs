@@ -2,7 +2,7 @@ use crate::{
     common::types::APIError,
     types::discount::{
         DiscountAutomaticAppCreateResp, DiscountAutomaticAppInput, DiscountAutomaticAppUpdateInput,
-        DiscountAutomaticAppUpdateResp,
+        DiscountAutomaticAppUpdateResp, DiscountNodesResp,
     },
 };
 use serde_json::json;
@@ -192,4 +192,83 @@ pub async fn update_automatic_app_discount(
     });
 
     execute_graphql(shop_url, version, access_token, query, variables).await
+}
+
+pub async fn list_discounts(
+    shop_url: &String,
+    version: &String,
+    access_token: &String,
+    first: Option<i32>,
+    after: Option<String>,
+    query_filter: Option<String>,
+) -> Result<DiscountNodesResp, APIError> {
+    let query_str = r#"
+        query discountNodes($first: Int, $after: String, $query: String) {
+            discountNodes(first: $first, after: $after, query: $query) {
+                nodes {
+                    id
+                    discount {
+                        __typename
+                        ... on DiscountAutomaticApp {
+                            title
+                            status
+                            appDiscountType {
+                                appKey
+                                functionId
+                                functionHandle
+                                title
+                                description
+                            }
+                        }
+                        ... on DiscountCodeApp {
+                            title
+                            status
+                            appDiscountType {
+                                appKey
+                                functionId
+                                functionHandle
+                                title
+                                description
+                            }
+                        }
+                        ... on DiscountAutomaticBasic {
+                            title
+                            status
+                        }
+                        ... on DiscountCodeBasic {
+                            title
+                            status
+                        }
+                        ... on DiscountAutomaticBxgy {
+                            title
+                            status
+                        }
+                        ... on DiscountCodeBxgy {
+                            title
+                            status
+                        }
+                        ... on DiscountCodeFreeShipping {
+                            title
+                            status
+                        }
+                    }
+                }
+                pageInfo {
+                    hasNextPage
+                    hasPreviousPage
+                    startCursor
+                    endCursor
+                }
+            }
+        }
+    "#
+    .to_string();
+
+    let variables = json!({
+        "first": first.unwrap_or(50),
+        "after": after,
+        "query": query_filter
+    });
+
+    execute_graphql(shop_url, version, access_token, query_str, variables).await
 }
