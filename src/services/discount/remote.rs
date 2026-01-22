@@ -215,7 +215,6 @@ pub async fn list_discounts(
                             appDiscountType {
                                 appKey
                                 functionId
-                                functionHandle
                                 title
                                 description
                             }
@@ -226,7 +225,6 @@ pub async fn list_discounts(
                             appDiscountType {
                                 appKey
                                 functionId
-                                functionHandle
                                 title
                                 description
                             }

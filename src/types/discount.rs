@@ -124,8 +124,6 @@ pub struct DiscountAutomaticApp {
 pub struct AppDiscountType {
     pub app_key: String,
     pub function_id: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub function_handle: Option<String>,
     pub title: Option<String>,
     pub description: Option<String>,
 }
