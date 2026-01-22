@@ -1,6 +1,6 @@
 [package]
 name = "shopify-client"
-version = "0.9.1"
+version = "0.10.0"
 edition = "2021"
 description = "Modular Shopify library for Rust: API client, type-safe models, and webhook parsing utilities"
 authors = ["Sahil Sinha"]
