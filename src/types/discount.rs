@@ -40,6 +40,7 @@ pub struct PageInfo {
 #[derive(serde::Deserialize, Debug)]
 pub struct DiscountNode {
     pub id: String,
+    pub metafields: Option<MetafieldConnection>,
     pub discount: DiscountType,
 }
 
@@ -112,11 +113,10 @@ pub struct DiscountAutomaticApp {
     pub ends_at: Option<String>,
     pub status: String,
     pub app_discount_type: AppDiscountType,
-    pub combines_with: Option<DiscountCombinesWith>,
-    pub applies_on_one_time_purchase: Option<bool>,
-    pub applies_on_subscription: Option<bool>,
-    pub recurring_cycle_limit: Option<i32>,
-    pub metafields: Option<MetafieldConnection>,
+    pub combines_with: DiscountCombinesWith,
+    pub applies_on_one_time_purchase: bool,
+    pub applies_on_subscription: bool,
+    pub recurring_cycle_limit: i32,
 }
 
 #[derive(serde::Deserialize, Debug)]

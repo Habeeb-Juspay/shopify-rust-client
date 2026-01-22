@@ -94,17 +94,6 @@ pub async fn create_automatic_app_discount(
                     appliesOnOneTimePurchase
                     appliesOnSubscription
                     recurringCycleLimit
-                    metafields(first: 50) {
-                        edges {
-                            node {
-                                id
-                                namespace
-                                key
-                                value
-                                type
-                            }
-                        }
-                    }
                 }
                 userErrors {
                     field
@@ -152,17 +141,6 @@ pub async fn update_automatic_app_discount(
                     appliesOnOneTimePurchase
                     appliesOnSubscription
                     recurringCycleLimit
-                    metafields(first: 50) {
-                        edges {
-                            node {
-                                id
-                                namespace
-                                key
-                                value
-                                type
-                            }
-                        }
-                    }
                 }
                 userErrors {
                     field
@@ -207,6 +185,17 @@ pub async fn list_discounts(
             discountNodes(first: $first, after: $after, query: $query) {
                 nodes {
                     id
+                    metafields(first: 50) {
+                        edges {
+                            node {
+                                id
+                                namespace
+                                key
+                                value
+                                type
+                            }
+                        }
+                    }
                     discount {
                         __typename
                         ... on DiscountAutomaticApp {
