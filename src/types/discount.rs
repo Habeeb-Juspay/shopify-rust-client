@@ -146,6 +146,8 @@ pub struct DiscountUserError {
 #[derive(serde::Deserialize, Debug)]
 pub struct MetafieldConnection {
     pub edges: Vec<MetafieldEdge>,
+    #[serde(rename = "pageInfo")]
+    pub page_info: PageInfo,
 }
 
 #[derive(serde::Deserialize, Debug)]
@@ -162,6 +164,31 @@ pub struct Metafield {
     pub value: String,
     #[serde(rename = "type")]
     pub metafield_type: String,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct GetDiscountNodeResp {
+    #[serde(rename = "discountNode")]
+    pub discount_node: Option<DiscountNodeWithMetafields>,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct DiscountNodeWithMetafields {
+    pub id: String,
+    pub metafields: MetafieldConnection,
+    pub discount: DiscountType,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct GetDiscountMetafieldResp {
+    #[serde(rename = "discountNode")]
+    pub discount_node: Option<DiscountNodeWithSingleMetafield>,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct DiscountNodeWithSingleMetafield {
+    pub id: String,
+    pub metafield: Option<Metafield>,
 }
 
 // endregion

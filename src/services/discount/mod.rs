@@ -6,7 +6,8 @@ use crate::{
     common::types::{APIError, RequestCallbacks},
     types::discount::{
         DiscountAutomaticAppCreateResp, DiscountAutomaticAppInput, DiscountAutomaticAppUpdateInput,
-        DiscountAutomaticAppUpdateResp, DiscountNodesResp,
+        DiscountAutomaticAppUpdateResp, DiscountNodesResp, GetDiscountMetafieldResp,
+        GetDiscountNodeResp,
     },
 };
 
@@ -74,6 +75,42 @@ impl Discount {
             first,
             after,
             query,
+        )
+        .await
+    }
+
+    pub async fn get_discount_by_id(
+        &self,
+        id: &str,
+        first: Option<i32>,
+        after: Option<String>,
+    ) -> Result<GetDiscountNodeResp, APIError> {
+        remote::get_discount_by_id(
+            &self.shop_url,
+            &self.version,
+            &self.access_token,
+            &self.callbacks,
+            id,
+            first,
+            after,
+        )
+        .await
+    }
+
+    pub async fn get_discount_metafield(
+        &self,
+        id: &str,
+        namespace: &str,
+        key: &str,
+    ) -> Result<GetDiscountMetafieldResp, APIError> {
+        remote::get_discount_metafield(
+            &self.shop_url,
+            &self.version,
+            &self.access_token,
+            &self.callbacks,
+            id,
+            namespace,
+            key,
         )
         .await
     }

@@ -5,7 +5,8 @@ use crate::{
     },
     types::discount::{
         DiscountAutomaticAppCreateResp, DiscountAutomaticAppInput, DiscountAutomaticAppUpdateInput,
-        DiscountAutomaticAppUpdateResp, DiscountNodesResp,
+        DiscountAutomaticAppUpdateResp, DiscountNodesResp, GetDiscountMetafieldResp,
+        GetDiscountNodeResp,
     },
 };
 use serde_json::json;
@@ -203,6 +204,143 @@ pub async fn list_discounts(
         "first": first.unwrap_or(50),
         "after": after,
         "query": query_filter
+    });
+
+    execute_graphql(
+        shop_url,
+        version,
+        access_token,
+        callbacks,
+        query_str,
+        variables,
+    )
+    .await
+}
+
+pub async fn get_discount_by_id(
+    shop_url: &String,
+    version: &String,
+    access_token: &String,
+    callbacks: &RequestCallbacks,
+    id: &str,
+    first: Option<i32>,
+    after: Option<String>,
+) -> Result<GetDiscountNodeResp, APIError> {
+    let query_str = r#"
+        query GetDiscountNode($id: ID!, $first: Int, $after: String) {
+            discountNode(id: $id) {
+                id
+                metafields(first: $first, after: $after) {
+                    edges {
+                        node {
+                            id
+                            namespace
+                            key
+                            value
+                            type
+                        }
+                    }
+                    pageInfo {
+                        hasNextPage
+                        hasPreviousPage
+                        startCursor
+                        endCursor
+                    }
+                }
+                discount {
+                    __typename
+                    ... on DiscountAutomaticApp {
+                        title
+                        status
+                        appDiscountType {
+                            appKey
+                            functionId
+                            title
+                            description
+                        }
+                    }
+                    ... on DiscountCodeApp {
+                        title
+                        status
+                        appDiscountType {
+                            appKey
+                            functionId
+                            title
+                            description
+                        }
+                    }
+                    ... on DiscountAutomaticBasic {
+                        title
+                        status
+                    }
+                    ... on DiscountCodeBasic {
+                        title
+                        status
+                    }
+                    ... on DiscountAutomaticBxgy {
+                        title
+                        status
+                    }
+                    ... on DiscountCodeBxgy {
+                        title
+                        status
+                    }
+                    ... on DiscountCodeFreeShipping {
+                        title
+                        status
+                    }
+                }
+            }
+        }
+    "#
+    .to_string();
+
+    let variables = json!({
+        "id": id,
+        "first": first.unwrap_or(50),
+        "after": after
+    });
+
+    execute_graphql(
+        shop_url,
+        version,
+        access_token,
+        callbacks,
+        query_str,
+        variables,
+    )
+    .await
+}
+
+pub async fn get_discount_metafield(
+    shop_url: &String,
+    version: &String,
+    access_token: &String,
+    callbacks: &RequestCallbacks,
+    id: &str,
+    namespace: &str,
+    key: &str,
+) -> Result<GetDiscountMetafieldResp, APIError> {
+    let query_str = r#"
+        query GetDiscountMetafield($id: ID!, $namespace: String!, $key: String!) {
+            discountNode(id: $id) {
+                id
+                metafield(namespace: $namespace, key: $key) {
+                    id
+                    namespace
+                    key
+                    value
+                    type
+                }
+            }
+        }
+    "#
+    .to_string();
+
+    let variables = json!({
+        "id": id,
+        "namespace": namespace,
+        "key": key
     });
 
     execute_graphql(
