@@ -144,6 +144,12 @@ pub async fn list_discounts(
                                 type
                             }
                         }
+                        pageInfo {
+                            hasNextPage
+                            hasPreviousPage
+                            startCursor
+                            endCursor
+                        }
                     }
                     discount {
                         __typename
