@@ -5,8 +5,8 @@ use std::sync::Arc;
 use crate::{
     common::types::{APIError, RequestCallbacks},
     types::app_installation::{
-        DeleteMetafieldResp, GetCurrentAppInstallationResp, GetMetafieldResp, ListMetafieldsResp,
-        MetafieldInput, SetMetafieldsResp,
+        DeleteMetafieldsResp, GetCurrentAppInstallationResp, GetMetafieldResp, ListMetafieldsResp,
+        MetafieldIdentifierInput, MetafieldInput, SetMetafieldsResp,
     },
 };
 
@@ -90,16 +90,16 @@ impl AppInstallation {
         .await
     }
 
-    pub async fn delete_metafield(
+    pub async fn delete_metafields(
         &self,
-        metafield_id: &str,
-    ) -> Result<DeleteMetafieldResp, APIError> {
-        remote::delete_metafield(
+        metafields: &[MetafieldIdentifierInput],
+    ) -> Result<DeleteMetafieldsResp, APIError> {
+        remote::delete_metafields(
             &self.shop_url,
             &self.version,
             &self.access_token,
             &self.callbacks,
-            metafield_id,
+            metafields,
         )
         .await
     }

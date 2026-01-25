@@ -4,7 +4,9 @@ use std::sync::Arc;
 
 use crate::{
     common::types::{APIError, RequestCallbacks},
-    types::cart_transform::{CartTransformCreateInput, CartTransformCreateResp},
+    types::cart_transform::{
+        CartTransformCreateInput, CartTransformCreateResp, MetafieldsSetInput, MetafieldsSetResp,
+    },
 };
 
 pub struct CartTransform {
@@ -39,6 +41,20 @@ impl CartTransform {
             &self.access_token,
             &self.callbacks,
             input,
+        )
+        .await
+    }
+
+    pub async fn set_metafields(
+        &self,
+        metafields: &[MetafieldsSetInput],
+    ) -> Result<MetafieldsSetResp, APIError> {
+        remote::set_metafields(
+            &self.shop_url,
+            &self.version,
+            &self.access_token,
+            &self.callbacks,
+            metafields,
         )
         .await
     }

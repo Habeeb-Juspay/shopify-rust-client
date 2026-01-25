@@ -102,3 +102,97 @@ impl MetafieldInput {
         }
     }
 }
+
+// MetafieldsSet mutation types
+#[derive(Serialize, Debug, Clone)]
+pub struct MetafieldsSetInput {
+    #[serde(rename = "ownerId")]
+    pub owner_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub namespace: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub key: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub value: Option<String>,
+    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
+    pub metafield_type: Option<String>,
+    #[serde(rename = "compareDigest", skip_serializing_if = "Option::is_none")]
+    pub compare_digest: Option<String>,
+}
+
+impl MetafieldsSetInput {
+    pub fn new(
+        owner_id: String,
+        namespace: String,
+        key: String,
+        value: String,
+        metafield_type: String,
+    ) -> Self {
+        MetafieldsSetInput {
+            owner_id,
+            namespace: Some(namespace),
+            key: Some(key),
+            value: Some(value),
+            metafield_type: Some(metafield_type),
+            compare_digest: None,
+        }
+    }
+
+    pub fn with_compare_digest(mut self, compare_digest: Option<String>) -> Self {
+        self.compare_digest = compare_digest;
+        self
+    }
+}
+
+#[derive(Deserialize, Debug)]
+pub struct MetafieldsSetResp {
+    #[serde(rename = "metafieldsSet")]
+    pub metafields_set: MetafieldsSetPayload,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct MetafieldsSetPayload {
+    pub metafields: Option<Vec<Metafield>>,
+    #[serde(rename = "userErrors")]
+    pub user_errors: Vec<MetafieldsSetUserError>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Metafield {
+    pub key: String,
+    pub namespace: String,
+    pub value: String,
+    #[serde(rename = "createdAt")]
+    pub created_at: String,
+    #[serde(rename = "updatedAt")]
+    pub updated_at: String,
+    #[serde(rename = "compareDigest", skip_serializing_if = "Option::is_none")]
+    pub compare_digest: Option<String>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct MetafieldsSetUserError {
+    pub field: Option<Vec<String>>,
+    pub message: String,
+    pub code: Option<MetafieldsSetUserErrorCode>,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum MetafieldsSetUserErrorCode {
+    Blank,
+    Inclusion,
+    LessThanOrEqualTo,
+    Present,
+    TooLong,
+    TooShort,
+    Invalid,
+    InvalidType,
+    InvalidValue,
+    InvalidOwner,
+    ValueTypeMismatch,
+    AppNotAuthorized,
+    Taken,
+    UnidentifiedMetafield,
+    InvalidDigest,
+}

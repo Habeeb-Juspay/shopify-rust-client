@@ -49,7 +49,14 @@ pub async fn execute_graphql<T: serde::de::DeserializeOwned>(
     match response {
         Ok(resp) => {
             let response_headers = resp.headers().clone();
-            let response_text = resp.text().await.map_err(|_| APIError::FailedToParse)?;
+            let response_text = match resp.text().await {
+                Ok(text) => text,
+                Err(e) => {
+                    let error_msg = format!("<failed to read response body: {}>", e);
+                    callbacks.call_after(&endpoint, &error_msg, &response_headers);
+                    return Err(APIError::FailedToParse);
+                }
+            };
 
             callbacks.call_after(&endpoint, &response_text, &response_headers);
 
@@ -66,6 +73,10 @@ pub async fn execute_graphql<T: serde::de::DeserializeOwned>(
 
             graphql_response.data.ok_or(APIError::FailedToParse)
         }
-        Err(_) => Err(APIError::NetworkError),
+        Err(e) => {
+            let error_msg = format!("<network error: {}>", e);
+            callbacks.call_after(&endpoint, &error_msg, &HeaderMap::new());
+            Err(APIError::NetworkError)
+        }
     }
 }

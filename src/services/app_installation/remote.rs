@@ -4,8 +4,8 @@ use crate::{
         types::{APIError, RequestCallbacks},
     },
     types::app_installation::{
-        DeleteMetafieldResp, GetCurrentAppInstallationResp, GetMetafieldResp, ListMetafieldsResp,
-        MetafieldInput, SetMetafieldsResp,
+        DeleteMetafieldsResp, GetCurrentAppInstallationResp, GetMetafieldResp, ListMetafieldsResp,
+        MetafieldIdentifierInput, MetafieldInput, SetMetafieldsResp,
     },
 };
 use serde_json::json;
@@ -146,17 +146,21 @@ pub async fn list_metafields(
     execute_graphql(shop_url, version, access_token, callbacks, query, variables).await
 }
 
-pub async fn delete_metafield(
+pub async fn delete_metafields(
     shop_url: &String,
     version: &String,
     access_token: &String,
     callbacks: &RequestCallbacks,
-    metafield_id: &str,
-) -> Result<DeleteMetafieldResp, APIError> {
+    metafields: &[MetafieldIdentifierInput],
+) -> Result<DeleteMetafieldsResp, APIError> {
     let query = r#"
-        mutation MetafieldDelete($input: MetafieldDeleteInput!) {
-            metafieldDelete(input: $input) {
-                deletedId
+        mutation metafieldsDelete($metafields: [MetafieldIdentifierInput!]!) {
+            metafieldsDelete(metafields: $metafields) {
+                deletedMetafields {
+                    ownerId
+                    namespace
+                    key
+                }
                 userErrors {
                     field
                     message
@@ -167,9 +171,7 @@ pub async fn delete_metafield(
     .to_string();
 
     let variables = json!({
-        "input": {
-            "id": metafield_id
-        }
+        "metafields": metafields
     });
 
     execute_graphql(shop_url, version, access_token, callbacks, query, variables).await

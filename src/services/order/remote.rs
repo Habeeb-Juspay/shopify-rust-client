@@ -39,13 +39,24 @@ pub async fn patch_order(
     match response {
         Ok(resp) => {
             let response_headers = resp.headers().clone();
-            let response_text = resp.text().await.map_err(|_| APIError::FailedToParse)?;
+            let response_text = match resp.text().await {
+                Ok(text) => text,
+                Err(e) => {
+                    let error_msg = format!("<failed to read response body: {}>", e);
+                    callbacks.call_after(&endpoint, &error_msg, &response_headers);
+                    return Err(APIError::FailedToParse);
+                }
+            };
 
             callbacks.call_after(&endpoint, &response_text, &response_headers);
 
             parse_response_from_text::<GetOrderResp>(&response_text)
         }
-        Err(_) => Err(APIError::NetworkError),
+        Err(e) => {
+            let error_msg = format!("<network error: {}>", e);
+            callbacks.call_after(&endpoint, &error_msg, &HeaderMap::new());
+            Err(APIError::NetworkError)
+        }
     }
 }
 
@@ -75,13 +86,24 @@ pub async fn get_order_with_name(
     match response {
         Ok(resp) => {
             let response_headers = resp.headers().clone();
-            let response_text = resp.text().await.map_err(|_| APIError::FailedToParse)?;
+            let response_text = match resp.text().await {
+                Ok(text) => text,
+                Err(e) => {
+                    let error_msg = format!("<failed to read response body: {}>", e);
+                    callbacks.call_after(&endpoint, &error_msg, &response_headers);
+                    return Err(APIError::FailedToParse);
+                }
+            };
 
             callbacks.call_after(&endpoint, &response_text, &response_headers);
 
             parse_response_from_text::<OrderQueryResp>(&response_text)
         }
-        Err(_) => Err(APIError::NetworkError),
+        Err(e) => {
+            let error_msg = format!("<network error: {}>", e);
+            callbacks.call_after(&endpoint, &error_msg, &HeaderMap::new());
+            Err(APIError::NetworkError)
+        }
     }
 }
 
@@ -111,12 +133,23 @@ pub async fn get_order_with_id(
     match response {
         Ok(resp) => {
             let response_headers = resp.headers().clone();
-            let response_text = resp.text().await.map_err(|_| APIError::FailedToParse)?;
+            let response_text = match resp.text().await {
+                Ok(text) => text,
+                Err(e) => {
+                    let error_msg = format!("<failed to read response body: {}>", e);
+                    callbacks.call_after(&endpoint, &error_msg, &response_headers);
+                    return Err(APIError::FailedToParse);
+                }
+            };
 
             callbacks.call_after(&endpoint, &response_text, &response_headers);
 
             parse_response_from_text::<GetOrderResp>(&response_text)
         }
-        Err(_) => Err(APIError::NetworkError),
+        Err(e) => {
+            let error_msg = format!("<network error: {}>", e);
+            callbacks.call_after(&endpoint, &error_msg, &HeaderMap::new());
+            Err(APIError::NetworkError)
+        }
     }
 }

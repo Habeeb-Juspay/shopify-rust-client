@@ -95,15 +95,32 @@ pub struct MetafieldEdge {
 
 #[derive(serde::Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct DeleteMetafieldResp {
-    pub metafield_delete: MetafieldDeletePayload,
+pub struct DeleteMetafieldsResp {
+    pub metafields_delete: MetafieldsDeletePayload,
 }
 
 #[derive(serde::Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct MetafieldDeletePayload {
-    pub deleted_id: Option<String>,
+pub struct MetafieldsDeletePayload {
+    pub deleted_metafields: Option<Vec<MetafieldIdentifier>>,
     pub user_errors: Vec<UserError>,
+}
+
+#[derive(serde::Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct MetafieldIdentifier {
+    pub owner_id: String,
+    pub namespace: String,
+    pub key: String,
+}
+
+// Input type for deleting metafields
+#[derive(serde::Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct MetafieldIdentifierInput {
+    pub owner_id: String,
+    pub namespace: String,
+    pub key: String,
 }
 
 // Request Types
