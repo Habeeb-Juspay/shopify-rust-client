@@ -11,8 +11,9 @@ A Rust client library for interacting with the Shopify Admin API. Supports both 
 - 💳 **Subscriptions** (GraphQL): Recurring/usage/combined subscriptions, trial management, usage tracking
 - 🎁 **Discounts** (GraphQL): Create and manage automatic app discounts
 - ⚙️ **App Installation** (GraphQL): App metadata, metafields management
-- 🛒 **Cart Transform** (GraphQL): Create cart transformations
+- 🛒 **Cart Transform** (GraphQL): Create cart transformations with metafield support (create & update)
 - 🔧 **Shopify Functions** (GraphQL): List available functions
+- 🏪 **Shop** (GraphQL): Fetch shop owner details, plan info, and billing address
 
 #### Developer Experience
 - 📦 **Type-Safe**: Strongly typed models for all API responses
@@ -59,6 +60,7 @@ The library exposes the following public modules:
 use shopify_client::ShopifyClient;                    // Main client
 use shopify_client::types::order::*;                  // Order types
 use shopify_client::types::subscription::*;           // Subscription types
+use shopify_client::types::shop::*;                   // Shop types
 use shopify_client::webhooks::*;                      // Webhook utilities
 use shopify_client::{BeforeRequestCallback, AfterRequestCallback};  // Callback types
 ```
@@ -267,6 +269,185 @@ async fn main() {
 }
 ```
 
+### Create Cart Transform with Metafields
+
+```rust
+use shopify_client::ShopifyClient;
+use shopify_client::types::cart_transform::{CartTransformCreateInput, MetafieldInput};
+
+#[tokio::main]
+async fn main() {
+    let client = ShopifyClient::new(
+        "https://your-shop.myshopify.com".to_string(),
+        "your-access-token".to_string(),
+        None,
+    );
+
+    // Create metafields to configure the cart transform function
+    let metafields = vec![
+        MetafieldInput::new(
+            "$app".to_string(),
+            "config".to_string(),
+            r#"{"bundleDiscount": 10, "minQuantity": 2}"#.to_string(),
+            "json".to_string(),
+        ),
+    ];
+
+    let input = CartTransformCreateInput::new()
+        .with_function_handle("my-cart-transform".to_string())
+        .with_block_on_failure(false)
+        .with_metafields(metafields);
+
+    match client.cart_transform.create(&input).await {
+        Ok(response) => {
+            println!("Cart transform created: {:?}", response);
+            if let Some(cart_transform) = response.cart_transform_create.cart_transform {
+                println!("ID: {}", cart_transform.id);
+                println!("Function ID: {}", cart_transform.function_id);
+            }
+        }
+        Err(e) => {
+            eprintln!("Error: {:?}", e);
+        }
+    }
+}
+```
+
+### Update Metafields on Existing Cart Transform
+
+```rust
+use shopify_client::ShopifyClient;
+use shopify_client::types::cart_transform::MetafieldsSetInput;
+
+#[tokio::main]
+async fn main() {
+    let client = ShopifyClient::new(
+        "https://your-shop.myshopify.com".to_string(),
+        "your-access-token".to_string(),
+        None,
+    );
+
+    let cart_transform_id = "gid://shopify/CartTransform/123456".to_string();
+
+    // Update existing metafield and create a new one
+    let metafields = vec![
+        MetafieldsSetInput::new(
+            cart_transform_id.clone(),
+            "$app".to_string(),
+            "config".to_string(),
+            r#"{"bundleDiscount": 15, "minQuantity": 3}"#.to_string(),
+            "json".to_string(),
+        ),
+        MetafieldsSetInput::new(
+            cart_transform_id.clone(),
+            "$app".to_string(),
+            "settings".to_string(),
+            r#"{"enabled": true, "priority": 1}"#.to_string(),
+            "json".to_string(),
+        ),
+    ];
+
+    match client.cart_transform.set_metafields(&metafields).await {
+        Ok(response) => {
+            println!("Metafields updated successfully");
+            if let Some(metafields) = response.metafields_set.metafields {
+                for metafield in metafields {
+                    println!("  {}.{} = {}", metafield.namespace, metafield.key, metafield.value);
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("Error: {:?}", e);
+        }
+    }
+}
+```
+
+### Update Metafields with Compare-and-Set (CAS)
+
+For safe concurrent updates, use the `compare_digest` field to ensure the metafield hasn't changed since you last read it:
+
+```rust
+use shopify_client::ShopifyClient;
+use shopify_client::types::cart_transform::MetafieldsSetInput;
+
+#[tokio::main]
+async fn main() {
+    let client = ShopifyClient::new(
+        "https://your-shop.myshopify.com".to_string(),
+        "your-access-token".to_string(),
+        None,
+    );
+
+    let cart_transform_id = "gid://shopify/CartTransform/123456".to_string();
+
+    // Update with compare-and-set to prevent race conditions
+    let metafields = vec![
+        MetafieldsSetInput::new(
+            cart_transform_id.clone(),
+            "$app".to_string(),
+            "config".to_string(),
+            r#"{"bundleDiscount": 20, "minQuantity": 4}"#.to_string(),
+            "json".to_string(),
+        )
+        .with_compare_digest(Some("fd6b73725c9e83da2d2bcfaf90b27305b9058a48a1565639aa00d718d4caf8e8".to_string())),
+    ];
+
+    match client.cart_transform.set_metafields(&metafields).await {
+        Ok(response) => {
+            println!("Metafields updated with CAS");
+            if let Some(metafields) = response.metafields_set.metafields {
+                for metafield in metafields {
+                    println!("  {}.{} (digest: {:?})", 
+                        metafield.namespace, 
+                        metafield.key, 
+                        metafield.compare_digest
+                    );
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("Error (may indicate digest mismatch): {:?}", e);
+        }
+    }
+}
+```
+
+### Get Shop Owner Details
+
+```rust
+use shopify_client::ShopifyClient;
+
+#[tokio::main]
+async fn main() {
+    let client = ShopifyClient::new(
+        "https://your-shop.myshopify.com".to_string(),
+        "your-access-token".to_string(),
+        None,
+    );
+
+    match client.shop.get().await {
+        Ok(response) => {
+            let shop = response.shop;
+            println!("Shop Name: {}", shop.name);
+            println!("Owner: {}", shop.shop_owner_name);
+            println!("Email: {}", shop.email);
+            println!("Contact Email: {}", shop.contact_email);
+            println!("Domain: {}", shop.myshopify_domain);
+            println!("Primary Domain: {}", shop.primary_domain.host);
+            println!("Plan: {}", shop.plan.display_name);
+            println!("Account Owner: {} ({})", shop.account_owner.name, shop.account_owner.email);
+            if let Some(city) = &shop.shop_address.city {
+                println!("Location: {}", city);
+            }
+        }
+        Err(e) => {
+            eprintln!("Error: {:?}", e);
+        }
+    }
+}
+```
+
 ### Parse Webhooks
 
 ```rust
@@ -309,6 +490,7 @@ src/
 │   ├── discount.rs        # Discount types (GraphQL)
 │   ├── app_installation.rs # App installation types (GraphQL)
 │   ├── cart_transform.rs  # Cart transform types (GraphQL)
+│   ├── shop.rs            # Shop types (GraphQL)
 │   └── shopify_functions.rs # Shopify functions types (GraphQL)
 ├── webhooks/              # Public webhook parsing module
 │   ├── mod.rs             # Webhook parsing functions
@@ -324,6 +506,7 @@ src/
     ├── discount/          # Discount service (GraphQL)
     ├── app_installation/  # App installation service (GraphQL)
     ├── cart_transform/    # Cart transform service (GraphQL)
+    ├── shop/              # Shop service (GraphQL)
     └── shopify_functions/ # Shopify functions service (GraphQL)
         ├── mod.rs         # Service struct with public methods
         └── remote.rs      # Internal API implementation
@@ -381,6 +564,19 @@ The library provides strongly-typed models organized by resource:
 
 - **CartTransformCreateInput**: Create cart transformation functions
 - **CartTransformCreateResp**: Cart transform creation response
+- **MetafieldInput**: Metafield input for cart transform creation
+- **MetafieldsSetInput**: Update or create metafields on existing resources
+- **MetafieldsSetResp**: Metafields set response with updated metafield data
+- **Metafield**: Metafield data with timestamps and compare digest for CAS
+
+### Shop Types (`types::shop`)
+
+- **GetShopResp**: Response wrapper for the shop query
+- **Shop**: Shop information including owner details, plan, and addresses
+- **StaffMember**: Account owner details (ID, name, email)
+- **Domain**: Primary domain information
+- **ShopPlan**: Billing plan details (display name, partner development, Shopify Plus)
+- **ShopAddress**: Shop billing address
 
 ### Shopify Functions Types (`types::shopify_functions`)
 

@@ -14,6 +14,7 @@ pub struct ShopifyClient {
     pub discount: services::discount::Discount,
     pub cart_transform: services::cart_transform::CartTransform,
     pub shopify_functions: services::shopify_functions::ShopifyFunctions,
+    pub shop: services::shop::Shop,
 }
 
 impl ShopifyClient {
@@ -66,6 +67,12 @@ impl ShopifyClient {
                 Arc::clone(&callbacks_arc),
             ),
             shopify_functions: services::shopify_functions::ShopifyFunctions::new(
+                Arc::clone(&shop_url_arc),
+                Arc::clone(&api_version_arc),
+                Arc::clone(&access_token_arc),
+                Arc::clone(&callbacks_arc),
+            ),
+            shop: services::shop::Shop::new(
                 Arc::clone(&shop_url_arc),
                 Arc::clone(&api_version_arc),
                 Arc::clone(&access_token_arc),
