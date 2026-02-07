@@ -14,6 +14,26 @@ pub struct ErrorResp {
     pub errors: String,
 }
 
+#[derive(serde::Deserialize, Debug)]
+pub struct UserError {
+    pub field: Option<Vec<String>>,
+    pub message: String,
+}
+
+#[derive(serde::Deserialize, Debug)]
+pub struct AccessScope {
+    pub handle: String,
+}
+
+#[derive(serde::Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct PageInfo {
+    pub has_next_page: bool,
+    pub has_previous_page: Option<bool>,
+    pub start_cursor: Option<String>,
+    pub end_cursor: Option<String>,
+}
+
 pub type BeforeRequestCallback = Arc<dyn Fn(&str, Option<&str>, &HeaderMap) + Send + Sync>;
 pub type AfterRequestCallback = Arc<dyn Fn(&str, &str, &HeaderMap) + Send + Sync>;
 

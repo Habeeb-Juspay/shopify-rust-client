@@ -1,3 +1,5 @@
+use crate::common::types::{AccessScope, UserError};
+
 // Response Types
 
 #[derive(serde::Deserialize, Debug)]
@@ -13,11 +15,6 @@ pub struct AppInstallation {
     pub access_scopes: Vec<AccessScope>,
     pub active_subscriptions: Vec<AppSubscription>,
     pub launch_url: String,
-}
-
-#[derive(serde::Deserialize, Debug)]
-pub struct AccessScope {
-    pub handle: String,
 }
 
 #[derive(serde::Deserialize, Debug)]
@@ -52,13 +49,6 @@ pub struct Metafield {
     pub metafield_type: String,
     pub created_at: Option<String>,
     pub updated_at: Option<String>,
-}
-
-#[derive(serde::Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct UserError {
-    pub field: Option<Vec<String>>,
-    pub message: String,
 }
 
 #[derive(serde::Deserialize, Debug)]

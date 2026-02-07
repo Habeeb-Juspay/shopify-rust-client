@@ -4,4 +4,5 @@ pub mod discount;
 pub mod order;
 pub mod shop;
 pub mod shopify_functions;
+pub mod storefront_access_token;
 pub mod subscription;

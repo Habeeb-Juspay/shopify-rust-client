@@ -1,3 +1,5 @@
+use crate::common::types::UserError;
+
 // region: Response Types
 
 #[derive(serde::Deserialize, Debug)]
@@ -241,13 +243,6 @@ pub struct MoneyV2 {
     pub amount: String,
     #[serde(rename = "currencyCode")]
     pub currency_code: String,
-}
-
-#[derive(serde::Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct UserError {
-    pub field: Option<Vec<String>>,
-    pub message: String,
 }
 
 // endregion

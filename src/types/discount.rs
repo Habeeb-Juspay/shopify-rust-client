@@ -1,3 +1,5 @@
+use crate::common::types::PageInfo;
+
 // region: Response Types
 
 #[derive(serde::Deserialize, Debug)]
@@ -23,18 +25,6 @@ pub struct DiscountNodesConnection {
     pub nodes: Vec<DiscountNode>,
     #[serde(rename = "pageInfo")]
     pub page_info: PageInfo,
-}
-
-#[derive(serde::Deserialize, Debug)]
-pub struct PageInfo {
-    #[serde(rename = "hasNextPage")]
-    pub has_next_page: bool,
-    #[serde(rename = "hasPreviousPage")]
-    pub has_previous_page: bool,
-    #[serde(rename = "startCursor")]
-    pub start_cursor: Option<String>,
-    #[serde(rename = "endCursor")]
-    pub end_cursor: Option<String>,
 }
 
 #[derive(serde::Deserialize, Debug)]
