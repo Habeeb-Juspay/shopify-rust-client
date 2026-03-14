@@ -349,6 +349,7 @@ pub struct BulkExportProduct {
     pub seo: Option<BulkExportSeo>,
     pub price_range_v2: Option<BulkExportPriceRange>,
     pub options: Option<Vec<BulkExportProductOption>>,
+    pub category: Option<BulkExportTaxonomyCategory>,
     pub featured_media: Option<BulkExportMediaPreview>,
 }
 
@@ -357,6 +358,21 @@ pub struct BulkExportProduct {
 pub struct BulkExportPriceRange {
     pub min_variant_price: BulkExportMoney,
     pub max_variant_price: BulkExportMoney,
+}
+
+#[derive(serde::Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct BulkExportTaxonomyCategory {
+    pub id: String,
+    pub name: String,
+    pub full_name: String,
+    pub is_leaf: bool,
+    pub is_root: bool,
+    pub is_archived: bool,
+    pub level: i32,
+    pub parent_id: Option<String>,
+    pub ancestor_ids: Vec<String>,
+    pub children_ids: Vec<String>,
 }
 
 #[derive(serde::Deserialize, Debug, Clone)]
@@ -445,7 +461,7 @@ pub struct BulkExportModel3dSource {
 
 #[derive(Debug, Clone)]
 pub enum ProductExportLine {
-    Product(BulkExportProduct),
+    Product(Box<BulkExportProduct>),
     Variant(BulkExportProductVariant),
     Media(BulkExportProductMedia),
 }
@@ -464,11 +480,11 @@ impl ProductExportLine {
             }
             if id.contains("Product") {
                 let product: BulkExportProduct = serde_json::from_value(value)?;
-                return Ok(ProductExportLine::Product(product));
+                return Ok(ProductExportLine::Product(Box::new(product)));
             }
         }
         let product: BulkExportProduct = serde_json::from_value(value)?;
-        Ok(ProductExportLine::Product(product))
+        Ok(ProductExportLine::Product(Box::new(product)))
     }
 }
 
